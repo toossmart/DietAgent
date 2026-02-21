@@ -15,13 +15,22 @@ class BaseModelFactory(ABC):
         pass
 
 class ChatModelFactory(BaseModelFactory):
-    def generator(self)->Optional[Embeddings|BaseChatModel]:
-        return ChatTongyi(model=rag_config['chat_model_name'])
+    def generator(self,chat_model_name)->Optional[Embeddings|BaseChatModel]:
+        return ChatTongyi(model=chat_model_name)
+
+class VersionModelFactory(BaseModelFactory):
+    def generator(self,version_model_name)->Optional[Embeddings|BaseChatModel]:
+        return ChatTongyi(model=version_model_name)
 
 class EmbeddingsFactory(BaseModelFactory):
     def generator(self)->Optional[Embeddings|BaseChatModel]:
         return DashScopeEmbeddings(model=rag_config['embedding_model_name'])
 
 
-chat_model_factory = ChatModelFactory().generator()
+
+chat_model_factory_version =VersionModelFactory().generator(rag_config['chat_model_factory_version'])
+
+chat_model_factory_kcal=ChatModelFactory().generator(rag_config['chat_model_factory_kcal'])
+
+
 embeddings_factory = EmbeddingsFactory().generator()

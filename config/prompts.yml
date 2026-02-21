@@ -1,2 +1,3 @@
-version_path: prompts/version_prompt.txt
-kcal_prompt_path: prompts/kcal_prompt.txt
+version_path: prompts/version.txt
+kcal_prompt_path: prompts/kcal.txt
+estimation_prompt_path: prompts/estimation.txt
