@@ -23,8 +23,8 @@ class VersionModelFactory(BaseModelFactory):
         return ChatTongyi(model=version_model_name)
 
 class EmbeddingsFactory(BaseModelFactory):
-    def generator(self)->Optional[Embeddings|BaseChatModel]:
-        return DashScopeEmbeddings(model=rag_config['embedding_model_name'])
+    def generator(self,embedding_model_name)->Optional[Embeddings|BaseChatModel]:
+        return DashScopeEmbeddings(model=embedding_model_name)
 
 
 
@@ -32,5 +32,4 @@ chat_model_factory_version =VersionModelFactory().generator(rag_config['chat_mod
 
 chat_model_factory_kcal=ChatModelFactory().generator(rag_config['chat_model_factory_kcal'])
 
-
-embeddings_factory = EmbeddingsFactory().generator()
+embeddings_factory = EmbeddingsFactory().generator(rag_config['embedding_model_name'])

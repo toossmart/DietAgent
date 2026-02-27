@@ -33,6 +33,7 @@ def load_estimation_prompts():
     path = prompts_config.get('estimation_prompt_path', 'prompts/estimation.txt')
     return _load_file_content(path)
 
+
 if __name__ == '__main__':
     # 测试加载
     print("Version Prompt:", len(load_version_prompts()))

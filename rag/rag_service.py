@@ -6,7 +6,7 @@ from langchain_core.runnables import RunnableLambda
 from pydantic import BaseModel, Field
 from model.factory import chat_model_factory_kcal,chat_model_factory_version, embeddings_factory
 from langchain_core.prompts import PromptTemplate
-from vector_store import VectorStoreService
+from rag.vector_store import VectorStoreService
 from utils.load_prompts import load_kcal_prompts, load_version_prompts, load_estimation_prompts
 
 
@@ -21,6 +21,9 @@ class AnalysisResult(BaseModel):
     total_calories: int= Field(description="总卡路里(整数)")
     advice: str= Field(description="健康饮食建议")
 
+
+import logging
+logger = logging.getLogger(__name__)
 
 class NutritionRAGService:
     def __init__(self):
@@ -98,6 +101,7 @@ class NutritionRAGService:
 
 
     def analyze(self,user_input=None,image_data=None):
+        logger.info("=== analyze 函数被调用了 ===")
 
         if  image_data:
             print(">> 检测到图片，启用视觉估算模式...")
@@ -113,16 +117,22 @@ class NutritionRAGService:
             })
         else:
             return {"error": "未提供图片或文本输入"}
+        if not estimated_data or not isinstance(estimated_data, dict):
+            # 增加日志打印，方便排查模型到底返回了什么
+            logger.error(f"Step 1 返回格式异常: {estimated_data}")
+            return {"error": "食物识别失败，请尝试更清晰的描述"}
 
+        items_list = estimated_data.get('items', [])
+        if not items_list:
+            return {"error": "未能识别出任何菜品，请重新输入"}
 
-        #rag检索
-        items_list = estimated_data if isinstance(estimated_data, list) else estimated_data.get('items', [])
+        # Step 2: RAG 检索
         rag_context = self.retrieve_context(items_list)
 
-        print("--- 正在进行 Step 3: 营养计算 ---")
+        # Step 3: 传参时确保 user_data 的结构是完整的 JSON 字符串或符合 Prompt 预期
         final_result = self.chain_kcal.invoke({
-            "user_data": estimated_data,  # 把 Step 1 的结果传进去
-            "context": rag_context,  # 把 RAG 查到的知识传进去
+            "user_data": estimated_data,  # 确保这里是一个包含 items 的字典
+            "context": rag_context if rag_context else "未找到参考数据，请基于常识估算。",
             "format_instructions": self.calculation_parser.get_format_instructions()
         })
         return final_result
@@ -130,13 +140,13 @@ class NutritionRAGService:
 if __name__ == '__main__':
     service = NutritionRAGService()
 
-    # # 测试 1: 纯文本输入
-    # print("\n" + "=" * 20 + " 测试文本模式 " + "=" * 20)
-    # input_text = "我中午吃了一份宫保鸡丁，还有一碗米饭"
-    # result = service.analyze(user_input=input_text)
-    # print("最终结果:", result)
-
-    print("\n" + "="*20 + " 测试图片模式 " + "="*20)
-    img_url = "https://tse1.mm.bing.net/th/id/OIP.09GZTHe-lwPCKp7hWa4gRAHaE6?rs=1&pid=ImgDetMain&o=7&rm=3"
-    result_img = service.analyze(image_data=img_url)
-    print("图片结果:", result_img)
+    # 测试 1: 纯文本输入
+    print("\n" + "=" * 20 + " 测试文本模式 " + "=" * 20)
+    input_text = "我中午吃了一份宫保鸡丁，还有一碗米饭"
+    result = service.analyze(user_input=input_text)
+    print("最终结果:", result)
+    #
+    # print("\n" + "="*20 + " 测试图片模式 " + "="*20)
+    # img_url = "https://tse1.mm.bing.net/th/id/OIP.09GZTHe-lwPCKp7hWa4gRAHaE6?rs=1&pid=ImgDetMain&o=7&rm=3"
+    # result_img = service.analyze(image_data=img_url)
+    # print("图片结果:", result_img)
