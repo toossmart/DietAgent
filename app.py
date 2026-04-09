@@ -51,7 +51,7 @@ async def analyze_json(request: AnalyzeRequest):
     try:
         # 调用核心分析逻辑
         result = service.analyze(user_input=request.text, image_data=request.image_url)
-
+        #agent_manager.run(request.text)
         # 检查业务逻辑错误（如识别失败）
         if isinstance(result, dict) and "error" in result:
             logger.warning(f"分析失败: {result['error']}")

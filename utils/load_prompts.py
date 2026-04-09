@@ -33,6 +33,10 @@ def load_estimation_prompts():
     path = prompts_config.get('estimation_prompt_path', 'prompts/estimation.txt')
     return _load_file_content(path)
 
+def load_agent_prompts():
+    path = prompts_config.get('estimation_prompt_path', 'prompts/agent.txt')
+    return _load_file_content(path)
+
 
 if __name__ == '__main__':
     # 测试加载

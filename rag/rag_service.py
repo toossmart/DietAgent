@@ -8,7 +8,7 @@ from model.factory import chat_model_factory_kcal,chat_model_factory_version, em
 from langchain_core.prompts import PromptTemplate
 from rag.vector_store import VectorStoreService
 from utils.load_prompts import load_kcal_prompts, load_version_prompts, load_estimation_prompts
-
+from agent.agent_manager import master_agent
 
 class DishItem(BaseModel):
     name: str = Field(description="菜品名称")
@@ -45,6 +45,7 @@ class NutritionRAGService:
         self.calculation_parser = JsonOutputParser(pydantic_object=AnalysisResult)
 
         self.__init_chains()
+
 
 
     def __init_chains(self):
@@ -136,6 +137,9 @@ class NutritionRAGService:
             "format_instructions": self.calculation_parser.get_format_instructions()
         })
         return final_result
+
+
+
 
 if __name__ == '__main__':
     service = NutritionRAGService()
